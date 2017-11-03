@@ -8,8 +8,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     configs:
-      - source: traefik-config
-        target: /etc/traefik/traefik.toml
+      - source: telegraf-config
+        target: /etc/telegraf/telegraf.conf
     deploy:
       restart_policy:
         condition: on-failure
