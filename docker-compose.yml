@@ -1,0 +1,64 @@
+version: "3.3"
+
+services:
+  telegraf:
+    image: telegraf:1.3
+    networks:
+      - tick-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    configs:
+      - source: traefik-config
+        target: /etc/traefik/traefik.toml
+    deploy:
+      restart_policy:
+        condition: on-failure
+      mode: global
+
+  influxdb:
+    image: influxdb:1.2
+    networks:
+      - tick-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
+
+  chronograf:
+    image: chronograf:1.3
+    networks:
+      - tick-net
+    ports:
+      - 8888:8888
+    deploy:
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+
+  kapacitor:
+    image: kapacitor:1.2
+    networks:
+      - tick-net
+    configs:
+      - source: kapacitor-config
+        target: /etc/kapacitor/kapacitor.conf
+    deploy:
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
+
+configs:
+  telegraf-config:
+    file: $PWD/conf/telegraf/telegraf.conf
+  kapacitor-config:
+    file: $PWD/conf/kapacitor/kapacitor.conf
+
+networks:
+  tick-net:
+    driver: overlay
