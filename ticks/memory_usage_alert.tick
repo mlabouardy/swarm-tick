@@ -1,32 +1,29 @@
 
 var database = 'vm_metrics'
+var rp = 'autogen'
 var measurement = 'mem_vm'
 var field = 'used_percent'
+var groupBy = 'host'
 var period = 1m
 var every = 1m
-var critical = 50
-var warning = 85
+var critical = 60
 
 var data = stream
     |from()
         .database(database)
-        .retentionPolicy('autogen')
+        .retentionPolicy(rp)
         .measurement(measurement)
-        .groupBy('host')
+        .groupBy(groupBy)
     |window()
         .period(period)
         .every(every)
     |mean(field)
         .as('value')
 
-var alert = data
-    |eval(lambda: sigma("value"))
-        .as('sigma')
-        .keep()
+var trigger = data
     |alert()
-        .message('Memory usage of {{ index .Tags "host" }} : {{ index .Fields "value"}} ')
-        .warn(lambda: "value" > warning)
         .crit(lambda: "value" > critical)
+        .message('Memory usage of {{ index .Tags "host" }} : {{ index .Fields "value"}} ')
 
-alert
+trigger
     .slack()
