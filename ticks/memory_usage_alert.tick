@@ -1,0 +1,32 @@
+
+var database = 'vm_metrics'
+var measurement = 'mem_vm'
+var field = 'used_percent'
+var period = 1m
+var every = 1m
+var critical = 50
+var warning = 85
+
+var data = stream
+    |from()
+        .database(database)
+        .retentionPolicy('autogen')
+        .measurement(measurement)
+        .groupBy('host')
+    |window()
+        .period(period)
+        .every(every)
+    |mean(field)
+        .as('value')
+
+var alert = data
+    |eval(lambda: sigma("value"))
+        .as('sigma')
+        .keep()
+    |alert()
+        .message('Memory usage of {{ index .Tags "host" }} : {{ index .Fields "value"}} ')
+        .warn(lambda: "value" > warning)
+        .crit(lambda: "value" > critical)
+
+alert
+    .slack()

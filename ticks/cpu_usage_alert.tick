@@ -1,0 +1,31 @@
+
+var database = 'vm_metrics'
+var measurement = 'cpu_vm'
+var field = 'usage_user'
+var period = 1m
+var every = 1m
+var critical = 90
+var warning = 80
+
+var data = stream
+    |from()
+      .database(database)
+      .retentionPolicy('autogen')
+      .measurement(measurement)
+      .groupBy('host')
+    |window()
+      .period(period)
+      .every(every)
+    |mean(field)
+      .as('value')
+
+var alert = data
+    |eval(lambda: sigma("value"))
+      .as('sigma')
+      .keep()
+    |alert()
+      .message('CPU usage of {{ index .Tags "host" }} : {{ index .Fields "value" }}')
+      .warn(lambda: "value" > critical)
+      .crit(lambda: "value" > warning)
+alert
+  .slack()
