@@ -1,13 +1,12 @@
 # swarm-tick
-Monitor Swarm Cluster with Telegraf, InfluxDB, Chronograf &amp; Kapacitor
+
+Monitor Swarm Cluster with Telegraf, InfluxDB, Chronograf, Kapacitor & Slack
 
 
-kapacitor define mem_alert -type stream -tick mem_alert.tick -dbrp telegraf.autogen
-kapacitor enable mem_alert
-kapacitor list recordings
+## How to use it
 
+* [Monitor Swarm cluster with TICK stack & Slack](http://www.blog.labouardy.com/monitor-swarm-cluster-with-tick-stack-slack/)
 
-Just fill /dev/shm via dd or similar.
+## Maintainers
 
-swapoff -a
-dd if=/dev/zero of=/dev/shm/fill bs=1k count=1024k
+* Mohamed Labouardy - mohamed@labouardy.com
